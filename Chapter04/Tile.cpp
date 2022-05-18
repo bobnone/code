@@ -10,18 +10,9 @@
 #include "SpriteComponent.h"
 #include "Game.h"
 
-Tile::Tile(class Game* game)
-:Actor(game)
-,mParent(nullptr)
-,f(0.0f)
-,g(0.0f)
-,h(0.0f)
-,mBlocked(false)
-,mSprite(nullptr)
-,mTileState(EDefault)
-,mSelected(false)
+Tile::Tile(class Game* game): Actor(game), mParent(nullptr), mF(0.0f), mG(0.0f), mH(0.0f), mBlocked(false), pSprite(nullptr), mTileState(EDefault), mSelected(false)
 {
-	mSprite = new SpriteComponent(this);
+	pSprite = new SpriteComponent(this);
 	UpdateTexture();
 }
 
@@ -62,5 +53,5 @@ void Tile::UpdateTexture()
 				text = "Assets/TileBrown.png";
 			break;
 	}
-	mSprite->SetTexture(GetGame()->GetTexture(text));
+	pSprite->SetTexture(GetGame()->GetTexture(text));
 }

@@ -10,7 +10,7 @@
 #include "MoveComponent.h"
 #include "Math.h"
 
-class NavComponent : public MoveComponent
+class NavComponent: public MoveComponent
 {
 public:
 	// Lower update order to update first
@@ -19,5 +19,5 @@ public:
 	void StartPath(const class Tile* start);
 	void TurnTo(const Vector2& pos);
 private:
-	const class Tile* mNextNode;
+	const class Tile* pNextNode;
 };

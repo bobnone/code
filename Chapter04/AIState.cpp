@@ -13,11 +13,6 @@
 void AIPatrol::Update(float deltaTime)
 {
 	SDL_Log("Updating %s state", GetName());
-	bool dead = true;
-	if (dead)
-	{
-		mOwner->ChangeState("Death");
-	}
 }
 
 void AIPatrol::OnEnter()

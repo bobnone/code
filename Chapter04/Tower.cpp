@@ -12,29 +12,31 @@
 #include "Game.h"
 #include "Enemy.h"
 #include "Bullet.h"
+#include "AIState.h"
 
-Tower::Tower(class Game* game)
-:Actor(game)
+Tower::Tower(class Game* game): Actor(game)
 {
 	SpriteComponent* sc = new SpriteComponent(this, 200);
 	sc->SetTexture(game->GetTexture("Assets/Tower.png"));
-	
-	mMove = new MoveComponent(this);
-	//mMove->SetAngularSpeed(Math::Pi);
-	
+	pMove = new MoveComponent(this);
+	//pMove->SetAngularSpeed(Math::Pi);
+	pAI = new AIComponent(this);
+	pAI->RegisterState(new AIPatrol(pAI));
+	pAI->RegisterState(new AIAttack(pAI));
+	pAI->ChangeState("Patrol");
 	mNextAttack = AttackTime;
 }
 
 void Tower::UpdateActor(float deltaTime)
 {
 	Actor::UpdateActor(deltaTime);
-	
 	mNextAttack -= deltaTime;
 	if (mNextAttack <= 0.0f)
 	{
 		Enemy* e = GetGame()->GetNearestEnemy(GetPosition());
 		if (e != nullptr)
 		{
+			pAI->ChangeState("Attack");
 			// Vector from me to enemy
 			Vector2 dir = e->GetPosition() - GetPosition();
 			float dist = dir.Length();
@@ -47,6 +49,10 @@ void Tower::UpdateActor(float deltaTime)
 				b->SetPosition(GetPosition());
 				b->SetRotation(GetRotation());
 			}
+		}
+		else
+		{
+			pAI->ChangeState("Patrol");
 		}
 		mNextAttack += AttackTime;
 	}

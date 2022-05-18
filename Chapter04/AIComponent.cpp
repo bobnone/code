@@ -11,40 +11,42 @@
 #include "AIState.h"
 #include <SDL/SDL_log.h>
 
-AIComponent::AIComponent(class Actor* owner)
-:Component(owner)
-,mCurrentState(nullptr)
+AIComponent::AIComponent(class Actor* owner): Component(owner), pCurrentState(nullptr)
 {
 }
 
 void AIComponent::Update(float deltaTime)
 {
-	if (mCurrentState)
+	if (pCurrentState)
 	{
-		mCurrentState->Update(deltaTime);
+		pCurrentState->Update(deltaTime);
 	}
 }
 
 void AIComponent::ChangeState(const std::string& name)
 {
-	// First exit the current state
-	if (mCurrentState)
+	if (pCurrentState)
 	{
-		mCurrentState->OnExit();
+		// Check if we even need to change states
+		if (pCurrentState->GetName() == name)
+		{
+			return;
+		}
+		// First exit the current state
+		pCurrentState->OnExit();
 	}
-	
 	// Try to find the new state from the map
 	auto iter = mStateMap.find(name);
 	if (iter != mStateMap.end())
 	{
-		mCurrentState = iter->second;
+		pCurrentState = iter->second;
 		// We're entering the new state
-		mCurrentState->OnEnter();
+		pCurrentState->OnEnter();
 	}
 	else
 	{
 		SDL_Log("Could not find AIState %s in state map", name.c_str());
-		mCurrentState = nullptr;
+		pCurrentState = nullptr;
 	}
 }
 

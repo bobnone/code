@@ -12,9 +12,7 @@
 #include "Enemy.h"
 #include <algorithm>
 
-Grid::Grid(class Game* game)
-:Actor(game)
-,mSelectedTile(nullptr)
+Grid::Grid(class Game* game): Actor(game), pSelectedTile(nullptr)
 {
 	// 7 rows, 16 columns
 	mTiles.resize(NumRows);
@@ -22,7 +20,6 @@ Grid::Grid(class Game* game)
 	{
 		mTiles[i].resize(NumCols);
 	}
-	
 	// Create tiles
 	for (size_t i = 0; i < NumRows; i++)
 	{
@@ -32,11 +29,9 @@ Grid::Grid(class Game* game)
 			mTiles[i][j]->SetPosition(Vector2(TileSize/2.0f + j * TileSize, StartY + i * TileSize));
 		}
 	}
-	
 	// Set start/end tiles
 	GetStartTile()->SetTileState(Tile::EStart);
 	GetEndTile()->SetTileState(Tile::EBase);
-	
 	// Set up adjacency lists
 	for (size_t i = 0; i < NumRows; i++)
 	{
@@ -60,11 +55,9 @@ Grid::Grid(class Game* game)
 			}
 		}
 	}
-	
 	// Find path (in reverse)
 	FindPath(GetEndTile(), GetStartTile());
 	UpdatePathTiles(GetStartTile());
-	
 	mNextEnemy = EnemyTime;
 }
 
@@ -75,12 +68,12 @@ void Grid::SelectTile(size_t row, size_t col)
 	if (tstate != Tile::EStart && tstate != Tile::EBase)
 	{
 		// Deselect previous one
-		if (mSelectedTile)
+		if (pSelectedTile)
 		{
-			mSelectedTile->ToggleSelect();
+			pSelectedTile->ToggleSelect();
 		}
-		mSelectedTile = mTiles[row][col];
-		mSelectedTile->ToggleSelect();
+		pSelectedTile = mTiles[row][col];
+		pSelectedTile->ToggleSelect();
 	}
 }
 
@@ -105,28 +98,24 @@ bool Grid::FindPath(Tile* start, Tile* goal)
 	{
 		for (size_t j = 0; j < NumCols; j++)
 		{
-			mTiles[i][j]->g = 0.0f;
+			mTiles[i][j]->mG = 0.0f;
 			mTiles[i][j]->mInOpenSet = false;
 			mTiles[i][j]->mInClosedSet = false;
 		}
 	}
-	
 	std::vector<Tile*> openSet;
-	
 	// Set current node to start, and add to closed set
 	Tile* current = start;
 	current->mInClosedSet = true;
-	
 	do
 	{
 		// Add adjacent nodes to open set
-		for (Tile* neighbor : current->mAdjacent)
+		for (Tile* neighbor: current->mAdjacent)
 		{
 			if (neighbor->mBlocked)
 			{
 				continue;
 			}
-			
 			// Only check nodes that aren't in the closed set
 			if (!neighbor->mInClosedSet)
 			{
@@ -134,40 +123,37 @@ bool Grid::FindPath(Tile* start, Tile* goal)
 				{
 					// Not in the open set, so set parent
 					neighbor->mParent = current;
-					neighbor->h = (neighbor->GetPosition() - goal->GetPosition()).Length();
+					neighbor->mH = (neighbor->GetPosition() - goal->GetPosition()).Length();
 					// g(x) is the parent's g plus cost of traversing edge
-					neighbor->g = current->g + TileSize;
-					neighbor->f = neighbor->g + neighbor->h;
+					neighbor->mG = current->mG + TileSize;
+					neighbor->mF = neighbor->mG + neighbor->mH;
 					openSet.emplace_back(neighbor);
 					neighbor->mInOpenSet = true;
 				}
 				else
 				{
 					// Compute g(x) cost if current becomes the parent
-					float newG = current->g + TileSize;
-					if (newG < neighbor->g)
+					float newG = current->mG + TileSize;
+					if (newG < neighbor->mG)
 					{
 						// Adopt this node
 						neighbor->mParent = current;
-						neighbor->g = newG;
+						neighbor->mG = newG;
 						// f(x) changes because g(x) changes
-						neighbor->f = neighbor->g + neighbor->h;
+						neighbor->mF = neighbor->mG + neighbor->mH;
 					}
 				}
 			}
 		}
-		
 		// If open set is empty, all possible paths are exhausted
 		if (openSet.empty())
 		{
 			break;
 		}
-		
 		// Find lowest cost node in open set
-		auto iter = std::min_element(openSet.begin(), openSet.end(),
-									 [](Tile* a, Tile* b) {
-										 return a->f < b->f;
-									 });
+		auto iter = std::min_element(openSet.begin(), openSet.end(), [](Tile* a, Tile* b) {
+			return a->mF < b->mF;
+		});
 		// Set to current and move from open to closed
 		current = *iter;
 		openSet.erase(iter);
@@ -175,7 +161,6 @@ bool Grid::FindPath(Tile* start, Tile* goal)
 		current->mInClosedSet = true;
 	}
 	while (current != goal);
-	
 	// Did we find a path?
 	return (current == goal) ? true : false;
 }
@@ -193,7 +178,6 @@ void Grid::UpdatePathTiles(class Tile* start)
 			}
 		}
 	}
-	
 	Tile* t = start->mParent;
 	while (t != GetEndTile())
 	{
@@ -204,18 +188,18 @@ void Grid::UpdatePathTiles(class Tile* start)
 
 void Grid::BuildTower()
 {
-	if (mSelectedTile && !mSelectedTile->mBlocked)
+	if (pSelectedTile && !pSelectedTile->mBlocked)
 	{
-		mSelectedTile->mBlocked = true;
+		pSelectedTile->mBlocked = true;
 		if (FindPath(GetEndTile(), GetStartTile()))
 		{
 			Tower* t = new Tower(GetGame());
-			t->SetPosition(mSelectedTile->GetPosition());
+			t->SetPosition(pSelectedTile->GetPosition());
 		}
 		else
 		{
 			// This tower would block the path, so don't allow build
-			mSelectedTile->mBlocked = false;
+			pSelectedTile->mBlocked = false;
 			FindPath(GetEndTile(), GetStartTile());
 		}
 		UpdatePathTiles(GetStartTile());
@@ -235,7 +219,6 @@ Tile* Grid::GetEndTile()
 void Grid::UpdateActor(float deltaTime)
 {
 	Actor::UpdateActor(deltaTime);
-	
 	// Is it time to spawn a new enemy?
 	mNextEnemy -= deltaTime;
 	if (mNextEnemy <= 0.0f)

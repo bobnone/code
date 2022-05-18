@@ -1,0 +1,35 @@
+TODO:
+5.1 - Updating exercise
+5.2 - Add vertex color (RGB) to sprite shader
+6.1 - Multiple mesh shaders
+6.2 - Point lights
+7.1 - Add velocity to the listener
+7.2 - Virtual positions for events
+8.1 - Controller support
+8.2 - Abstract input mapping
+9.1 - User controlled camera rotation
+9.2 - Modified spline camera
+10.1 - Add jumping
+10.2 - SweepAndPrune() all 3 axes
+10.3 - Intersect OBB and OBB
+11.1 - Add Main Menu
+11.2 - Better radar
+11.3 - Radar arrow target
+12.1 - Animated bone positions
+12.2 - Blending animations
+13.1 - Add specular component to lights
+13.2 - Add spot lights
+14.1 - Only save changes
+14.2 - Create binary for animations
+Skipped:
+1.1 - I do not care about Pong
+1.2 - More Pong
+2.1 - Theory stuff
+2.2 - 2D stuff
+2.3 - 2D stuff
+3.1 - Theory stuff
+3.2 - 2D stuff
+3.3 - 2D stuff
+4.2 - I do not care about Connect 4
+Done:
+4.1 - State Machine

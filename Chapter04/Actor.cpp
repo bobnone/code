@@ -11,19 +11,14 @@
 #include "Component.h"
 #include <algorithm>
 
-Actor::Actor(Game* game)
-	:mState(EActive)
-	, mPosition(Vector2::Zero)
-	, mScale(1.0f)
-	, mRotation(0.0f)
-	, mGame(game)
+Actor::Actor(Game* game): mState(EActive), mPosition(Vector2::Zero), mScale(1.0f), mRotation(0.0f), pGame(game)
 {
-	mGame->AddActor(this);
+	pGame->AddActor(this);
 }
 
 Actor::~Actor()
 {
-	mGame->RemoveActor(this);
+	pGame->RemoveActor(this);
 	// Need to delete components
 	// Because ~Component calls RemoveComponent, need a different style loop
 	while (!mComponents.empty())
@@ -43,7 +38,7 @@ void Actor::Update(float deltaTime)
 
 void Actor::UpdateComponents(float deltaTime)
 {
-	for (auto comp : mComponents)
+	for (auto comp: mComponents)
 	{
 		comp->Update(deltaTime);
 	}
@@ -58,11 +53,10 @@ void Actor::ProcessInput(const uint8_t* keyState)
 	if (mState == EActive)
 	{
 		// First process input for components
-		for (auto comp : mComponents)
+		for (auto comp: mComponents)
 		{
 			comp->ProcessInput(keyState);
 		}
-
 		ActorInput(keyState);
 	}
 }
@@ -77,16 +71,13 @@ void Actor::AddComponent(Component* component)
 	// (The first element with a order higher than me)
 	int myOrder = component->GetUpdateOrder();
 	auto iter = mComponents.begin();
-	for (;
-		iter != mComponents.end();
-		++iter)
+	for (; iter != mComponents.end(); ++iter)
 	{
 		if (myOrder < (*iter)->GetUpdateOrder())
 		{
 			break;
 		}
 	}
-
 	// Inserts element before position of iterator
 	mComponents.insert(iter, component);
 }

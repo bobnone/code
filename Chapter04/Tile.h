@@ -10,7 +10,7 @@
 #include "Actor.h"
 #include <vector>
 
-class Tile : public Actor
+class Tile: public Actor
 {
 public:
 	friend class Grid;
@@ -21,9 +21,7 @@ public:
 		EStart,
 		EBase
 	};
-	
 	Tile(class Game* game);
-	
 	void SetTileState(TileState state);
 	TileState GetTileState() const { return mTileState; }
 	void ToggleSelect();
@@ -32,15 +30,14 @@ private:
 	// For pathfinding
 	std::vector<Tile*> mAdjacent;
 	Tile* mParent;
-	float f;
-	float g;
-	float h;
+	float mF;
+	float mG;
+	float mH;
 	bool mInOpenSet;
 	bool mInClosedSet;
 	bool mBlocked;
-	
 	void UpdateTexture();
-	class SpriteComponent* mSprite;
+	class SpriteComponent* pSprite;
 	TileState mTileState;
 	bool mSelected;
 };

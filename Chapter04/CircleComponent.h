@@ -14,10 +14,8 @@ class CircleComponent : public Component
 {
 public:
 	CircleComponent(class Actor* owner);
-	
 	void SetRadius(float radius) { mRadius = radius; }
 	float GetRadius() const;
-	
 	const Vector2& GetCenter() const;
 private:
 	float mRadius;

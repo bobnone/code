@@ -21,11 +21,10 @@ public:
 	virtual void Update(float deltaTime);
 	// Process input for this component
 	virtual void ProcessInput(const uint8_t* keyState) {}
-
 	int GetUpdateOrder() const { return mUpdateOrder; }
 protected:
 	// Owning actor
-	class Actor* mOwner;
+	class Actor* pOwner;
 	// Update order of component
 	int mUpdateOrder;
 };
