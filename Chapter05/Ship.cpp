@@ -12,14 +12,11 @@
 #include "Game.h"
 #include "Laser.h"
 
-Ship::Ship(Game* game)
-	:Actor(game)
-	,mLaserCooldown(0.0f)
+Ship::Ship(Game* game): Actor(game), mLaserCooldown(0.0f)
 {
 	// Create a sprite component
 	SpriteComponent* sc = new SpriteComponent(this, 150);
 	sc->SetTexture(game->GetTexture("Assets/Ship.png"));
-
 	// Create an input component and set keys/speed
 	InputComponent* ic = new InputComponent(this);
 	ic->SetForwardKey(SDL_SCANCODE_W);
@@ -43,7 +40,6 @@ void Ship::ActorInput(const uint8_t* keyState)
 		Laser* laser = new Laser(GetGame());
 		laser->SetPosition(GetPosition());
 		laser->SetRotation(GetRotation());
-
 		// Reset laser cooldown (half second)
 		mLaserCooldown = 0.5f;
 	}

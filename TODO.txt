@@ -1,5 +1,4 @@
 TODO:
-5.1 - Updating exercise
 5.2 - Add vertex color (RGB) to sprite shader
 6.1 - Multiple mesh shaders
 6.2 - Point lights
@@ -33,3 +32,4 @@ Skipped:
 4.2 - I do not care about Connect 4
 Done:
 4.1 - State Machine
+5.1 - Updating exercise

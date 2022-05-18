@@ -8,13 +8,12 @@
 
 #pragma once
 #include "Actor.h"
-class Asteroid : public Actor
+class Asteroid: public Actor
 {
 public:
 	Asteroid(class Game* game);
 	~Asteroid();
-	
-	class CircleComponent* GetCircle() { return mCircle; }
+	class CircleComponent* GetCircle() { return pCircle; }
 private:
-	class CircleComponent* mCircle;
+	class CircleComponent* pCircle;
 };

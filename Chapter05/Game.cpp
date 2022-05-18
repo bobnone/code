@@ -19,13 +19,8 @@
 #include "Asteroid.h"
 #include "Random.h"
 
-Game::Game()
-:mWindow(nullptr)
-,mSpriteShader(nullptr)
-,mIsRunning(true)
-,mUpdatingActors(false)
+Game::Game(): pWindow(nullptr), pSpriteShader(nullptr), mIsRunning(true), mUpdatingActors(false), mBGColor(Color::Black), mBGDirection(true)
 {
-	
 }
 
 bool Game::Initialize()
@@ -35,8 +30,7 @@ bool Game::Initialize()
 		SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
 		return false;
 	}
-	
-	// Set OpenGL attributes
+// Set OpenGL attributes:
 	// Use the core OpenGL profile
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	// Specify version 3.3
@@ -51,18 +45,14 @@ bool Game::Initialize()
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	// Force OpenGL to use hardware acceleration
 	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-	
-	mWindow = SDL_CreateWindow("Game Programming in C++ (Chapter 5)", 100, 100,
-							   1024, 768, SDL_WINDOW_OPENGL);
-	if (!mWindow)
+	pWindow = SDL_CreateWindow("Game Programming in C++ (Chapter 5)", 100, 100, 1024, 768, SDL_WINDOW_OPENGL);
+	if (!pWindow)
 	{
 		SDL_Log("Failed to create window: %s", SDL_GetError());
 		return false;
 	}
-	
 	// Create an OpenGL context
-	mContext = SDL_GL_CreateContext(mWindow);
-	
+	mContext = SDL_GL_CreateContext(pWindow);
 	// Initialize GLEW
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK)
@@ -70,25 +60,18 @@ bool Game::Initialize()
 		SDL_Log("Failed to initialize GLEW.");
 		return false;
 	}
-	
-	// On some platforms, GLEW will emit a benign error code,
-	// so clear it
+	// On some platforms, GLEW will emit a benign error code, so clear it
 	glGetError();
-	
 	// Make sure we can create/compile shaders
 	if (!LoadShaders())
 	{
 		SDL_Log("Failed to load shaders.");
 		return false;
 	}
-
 	// Create quad for drawing sprites
 	CreateSpriteVerts();
-
 	LoadData();
-
 	mTicksCount = SDL_GetTicks();
-	
 	return true;
 }
 
@@ -98,7 +81,7 @@ void Game::RunLoop()
 	{
 		ProcessInput();
 		UpdateGame();
-		GenerateOutput();
+		//GenerateOutput();
 	}
 }
 
@@ -114,15 +97,13 @@ void Game::ProcessInput()
 				break;
 		}
 	}
-	
 	const Uint8* keyState = SDL_GetKeyboardState(NULL);
 	if (keyState[SDL_SCANCODE_ESCAPE])
 	{
 		mIsRunning = false;
 	}
-
 	mUpdatingActors = true;
-	for (auto actor : mActors)
+	for (auto actor: mActors)
 	{
 		actor->ProcessInput(keyState);
 	}
@@ -133,24 +114,20 @@ void Game::UpdateGame()
 {
 	// Compute delta time
 	// Wait until 16ms has elapsed since last frame
-	while (!SDL_TICKS_PASSED(SDL_GetTicks(), mTicksCount + 16))
-		;
-
+	while (!SDL_TICKS_PASSED(SDL_GetTicks(), mTicksCount + 16));
 	float deltaTime = (SDL_GetTicks() - mTicksCount) / 1000.0f;
 	if (deltaTime > 0.05f)
 	{
 		deltaTime = 0.05f;
 	}
 	mTicksCount = SDL_GetTicks();
-
-	// Update all actors
+// Update all actors:
 	mUpdatingActors = true;
 	for (auto actor : mActors)
 	{
 		actor->Update(deltaTime);
 	}
 	mUpdatingActors = false;
-
 	// Move any pending actors to mActors
 	for (auto pending : mPendingActors)
 	{
@@ -158,7 +135,6 @@ void Game::UpdateGame()
 		mActors.emplace_back(pending);
 	}
 	mPendingActors.clear();
-
 	// Add any dead actors to a temp vector
 	std::vector<Actor*> deadActors;
 	for (auto actor : mActors)
@@ -168,50 +144,60 @@ void Game::UpdateGame()
 			deadActors.emplace_back(actor);
 		}
 	}
-
 	// Delete dead actors (which removes them from mActors)
 	for (auto actor : deadActors)
 	{
 		delete actor;
 	}
+	GenerateOutput(deltaTime);
 }
 
-void Game::GenerateOutput()
+void Game::GenerateOutput(float deltaTime)
 {
-	// Set the clear color to grey
-	glClearColor(0.86f, 0.86f, 0.86f, 1.0f);
+	if (mBGDirection && (mBGColor.z < Color::Blue.z))
+	{
+		// Update the current background color
+		mBGColor.z += 0.1f * deltaTime;
+	}
+	else if (!mBGDirection && (mBGColor.z > Color::Black.z))
+	{
+		// Update the current background color
+		mBGColor.z -= 0.1f * deltaTime;
+	}
+	else
+	{
+		mBGDirection = !mBGDirection;
+	}
+	// Set the clear color to the current background color
+	glClearColor(mBGColor.x, mBGColor.y, mBGColor.z, 1.0f);
 	// Clear the color buffer
 	glClear(GL_COLOR_BUFFER_BIT);
-	
 	// Draw all sprite components
 	// Enable alpha blending on the color buffer
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
 	// Set shader/vao as active
-	mSpriteShader->SetActive();
-	mSpriteVerts->SetActive();
-	for (auto sprite : mSprites)
+	pSpriteShader->SetActive();
+	pSpriteVerts->SetActive();
+	for (auto sprite: mSprites)
 	{
-		sprite->Draw(mSpriteShader);
+		sprite->Draw(pSpriteShader);
 	}
-
 	// Swap the buffers
-	SDL_GL_SwapWindow(mWindow);
+	SDL_GL_SwapWindow(pWindow);
 }
 
 bool Game::LoadShaders()
 {
-	mSpriteShader = new Shader();
-	if (!mSpriteShader->Load("Shaders/Sprite.vert", "Shaders/Sprite.frag"))
+	pSpriteShader = new Shader();
+	if (!pSpriteShader->Load("Shaders/Sprite.vert", "Shaders/Sprite.frag"))
 	{
 		return false;
 	}
-
-	mSpriteShader->SetActive();
+	pSpriteShader->SetActive();
 	// Set the view-projection matrix
 	Matrix4 viewProj = Matrix4::CreateSimpleViewProj(1024.f, 768.f);
-	mSpriteShader->SetMatrixUniform("uViewProj", viewProj);
+	pSpriteShader->SetMatrixUniform("uViewProj", viewProj);
 	return true;
 }
 
@@ -223,21 +209,18 @@ void Game::CreateSpriteVerts()
 		 0.5f, -0.5f, 0.f, 1.f, 1.f, // bottom right
 		-0.5f, -0.5f, 0.f, 0.f, 1.f  // bottom left
 	};
-
 	unsigned int indices[] = {
 		0, 1, 2,
 		2, 3, 0
 	};
-
-	mSpriteVerts = new VertexArray(vertices, 4, indices, 6);
+	pSpriteVerts = new VertexArray(vertices, 4, indices, 6);
 }
 
 void Game::LoadData()
 {
 	// Create player's ship
-	mShip = new Ship(this);
-	mShip->SetRotation(Math::PiOver2);
-
+	pShip = new Ship(this);
+	pShip->SetRotation(Math::PiOver2);
 	// Create asteroids
 	const int numAsteroids = 20;
 	for (int i = 0; i < numAsteroids; i++)
@@ -254,7 +237,6 @@ void Game::UnloadData()
 	{
 		delete mActors.back();
 	}
-
 	// Destroy textures
 	for (auto i : mTextures)
 	{
@@ -295,8 +277,7 @@ void Game::AddAsteroid(Asteroid* ast)
 
 void Game::RemoveAsteroid(Asteroid* ast)
 {
-	auto iter = std::find(mAsteroids.begin(),
-		mAsteroids.end(), ast);
+	auto iter = std::find(mAsteroids.begin(), mAsteroids.end(), ast);
 	if (iter != mAsteroids.end())
 	{
 		mAsteroids.erase(iter);
@@ -306,11 +287,11 @@ void Game::RemoveAsteroid(Asteroid* ast)
 void Game::Shutdown()
 {
 	UnloadData();
-	delete mSpriteVerts;
-	mSpriteShader->Unload();
-	delete mSpriteShader;
+	delete pSpriteVerts;
+	pSpriteShader->Unload();
+	delete pSpriteShader;
 	SDL_GL_DeleteContext(mContext);
-	SDL_DestroyWindow(mWindow);
+	SDL_DestroyWindow(pWindow);
 	SDL_Quit();
 }
 
@@ -337,7 +318,6 @@ void Game::RemoveActor(Actor* actor)
 		std::iter_swap(iter, mPendingActors.end() - 1);
 		mPendingActors.pop_back();
 	}
-
 	// Is it in actors?
 	iter = std::find(mActors.begin(), mActors.end(), actor);
 	if (iter != mActors.end())
@@ -354,16 +334,13 @@ void Game::AddSprite(SpriteComponent* sprite)
 	// (The first element with a higher draw order than me)
 	int myDrawOrder = sprite->GetDrawOrder();
 	auto iter = mSprites.begin();
-	for (;
-		iter != mSprites.end();
-		++iter)
+	for (; iter != mSprites.end(); ++iter)
 	{
 		if (myDrawOrder < (*iter)->GetDrawOrder())
 		{
 			break;
 		}
 	}
-
 	// Inserts element before position of iterator
 	mSprites.insert(iter, sprite);
 }

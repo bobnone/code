@@ -12,7 +12,6 @@
 // Uniforms for world transform and view-proj
 uniform mat4 uWorldTransform;
 uniform mat4 uViewProj;
-
 // Vertex attributes
 in vec3 inPosition;
 
