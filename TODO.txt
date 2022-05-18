@@ -1,5 +1,4 @@
 TODO:
-5.2 - Add vertex color (RGB) to sprite shader
 6.1 - Multiple mesh shaders
 6.2 - Point lights
 7.1 - Add velocity to the listener
@@ -22,7 +21,7 @@ TODO:
 14.2 - Create binary for animations
 Skipped:
 1.1 - I do not care about Pong
-1.2 - More Pong
+1.2 - I do not care about Pong
 2.1 - Theory stuff
 2.2 - 2D stuff
 2.3 - 2D stuff
@@ -33,3 +32,4 @@ Skipped:
 Done:
 4.1 - State Machine
 5.1 - Updating exercise
+5.2 - Add vertex color (RGB) to sprite shader

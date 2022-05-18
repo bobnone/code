@@ -203,17 +203,18 @@ bool Game::LoadShaders()
 
 void Game::CreateSpriteVerts()
 {
+	// Position (3), Texture coordinates(2), Vertex color(3)
 	float vertices[] = {
-		-0.5f,  0.5f, 0.f, 0.f, 0.f, // top left
-		 0.5f,  0.5f, 0.f, 1.f, 0.f, // top right
-		 0.5f, -0.5f, 0.f, 1.f, 1.f, // bottom right
-		-0.5f, -0.5f, 0.f, 0.f, 1.f  // bottom left
+		-0.5f, 0.5f, 0.f, 0.f, 0.f, 1.0f, 0.0f, 0.0f, // top left
+		0.5f, 0.5f, 0.f, 1.f, 0.f, 0.0f, 1.0f, 0.0f, // top right
+		0.5f, -0.5f, 0.f, 1.f, 1.f, 1.0f, 1.0f, 0.0f, // bottom right
+		-0.5f, -0.5f, 0.f, 0.f, 1.f, 0.0f, 1.0f, 1.0f, // bottom left
 	};
 	unsigned int indices[] = {
 		0, 1, 2,
 		2, 3, 0
 	};
-	pSpriteVerts = new VertexArray(vertices, 4, indices, 6);
+	pSpriteVerts = new VertexArray(vertices, 8, 4, indices, 6);
 }
 
 void Game::LoadData()
