@@ -14,10 +14,7 @@
 
 unsigned int AudioSystem::sNextID = 0;
 
-AudioSystem::AudioSystem(Game* game)
-	:mGame(game)
-	,mSystem(nullptr)
-	,mLowLevelSystem(nullptr)
+AudioSystem::AudioSystem(Game* game): pGame(game), pSystem(nullptr)
 {
 }
 
@@ -32,18 +29,16 @@ bool AudioSystem::Initialize()
 		FMOD_DEBUG_LEVEL_ERROR, // Log only errors
 		FMOD_DEBUG_MODE_TTY // Output to stdout
 	);
-
 	// Create FMOD studio system object
 	FMOD_RESULT result;
-	result = FMOD::Studio::System::create(&mSystem);
+	result = FMOD::Studio::System::create(&pSystem);
 	if (result != FMOD_OK)
 	{
 		SDL_Log("Failed to create FMOD system: %s", FMOD_ErrorString(result));
 		return false;
 	}
-
 	// Initialize FMOD studio system
-	result = mSystem->initialize(
+	result = pSystem->initialize(
 		512, // Max number of concurrent sounds
 		FMOD_STUDIO_INIT_NORMAL, // Use default settings
 		FMOD_INIT_NORMAL, // Use default settings
@@ -54,14 +49,11 @@ bool AudioSystem::Initialize()
 		SDL_Log("Failed to initialize FMOD system: %s", FMOD_ErrorString(result));
 		return false;
 	}
-
-	// Save the low-level system pointer
-	mSystem->getLowLevelSystem(&mLowLevelSystem);
-
+	// Save the core system pointer
+	pSystem->getCoreSystem(&pCoreSystem);
 	// Load the master banks (strings first)
 	LoadBank("Assets/Master Bank.strings.bank");
 	LoadBank("Assets/Master Bank.bank");
-
 	return true;
 }
 
@@ -70,9 +62,9 @@ void AudioSystem::Shutdown()
 	// Unload all banks
 	UnloadAllBanks();
 	// Shutdown FMOD system
-	if (mSystem)
+	if (pSystem)
 	{
-		mSystem->release();
+		pSystem->release();
 	}
 }
 
@@ -83,15 +75,13 @@ void AudioSystem::LoadBank(const std::string& name)
 	{
 		return;
 	}
-
 	// Try to load bank
 	FMOD::Studio::Bank* bank = nullptr;
-	FMOD_RESULT result = mSystem->loadBankFile(
+	FMOD_RESULT result = pSystem->loadBankFile(
 		name.c_str(), // File name of bank
 		FMOD_STUDIO_LOAD_BANK_NORMAL, // Normal loading
 		&bank // Save pointer to bank
 	);
-
 	const int maxPathLength = 512;
 	if (result == FMOD_OK)
 	{
@@ -146,7 +136,6 @@ void AudioSystem::UnloadBank(const std::string& name)
 	{
 		return;
 	}
-
 	// First we need to remove all events from this bank
 	FMOD::Studio::Bank* bank = iter->second;
 	int numEvents = 0;
@@ -193,7 +182,6 @@ void AudioSystem::UnloadBank(const std::string& name)
 			}
 		}
 	}
-
 	// Unload sample data and bank
 	bank->unloadSampleData();
 	bank->unload();
@@ -253,15 +241,13 @@ void AudioSystem::Update(float deltaTime)
 			done.emplace_back(iter.first);
 		}
 	}
-	
 	// Remove done event instances from map
 	for (auto id : done)
 	{
 		mEventInstances.erase(id);
 	}
-
 	// Update FMOD
-	mSystem->update();
+	pSystem->update();
 }
 
 namespace
@@ -278,7 +264,7 @@ namespace
 	}
 }
 
-void AudioSystem::SetListener(const Matrix4& viewMatrix)
+void AudioSystem::SetListener(const Matrix4& viewMatrix, const Vector3& velocity)
 {
 	// Invert the view matrix to get the correct vectors
 	Matrix4 invView = viewMatrix;
@@ -290,10 +276,10 @@ void AudioSystem::SetListener(const Matrix4& viewMatrix)
 	listener.forward = VecToFMOD(invView.GetZAxis());
 	// In the inverted view, second row is up
 	listener.up = VecToFMOD(invView.GetYAxis());
-	// Set velocity to zero (fix if using Doppler effect)
-	listener.velocity = {0.0f, 0.0f, 0.0f};
+	// Set velocity
+	listener.velocity = VecToFMOD(velocity);
 	// Send to FMOD
-	mSystem->setListenerAttributes(0, &listener);
+	pSystem->setListenerAttributes(0, &listener);
 }
 
 float AudioSystem::GetBusVolume(const std::string& name) const

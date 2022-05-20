@@ -16,13 +16,10 @@ in vec2 fragTexCoord;
 in vec3 fragNormal;
 // Position (in world space)
 in vec3 fragWorldPos;
-
 // This corresponds to the output color to the color buffer
 out vec4 outColor;
-
 // This is used for the texture sampling
 uniform sampler2D uTexture;
-
 // Create a struct for directional light
 struct DirectionalLight
 {
@@ -33,7 +30,6 @@ struct DirectionalLight
 	// Specular color
 	vec3 mSpecColor;
 };
-
 // Uniforms for lighting
 // Camera position (in world space)
 uniform vec3 uCameraPos;
@@ -41,7 +37,6 @@ uniform vec3 uCameraPos;
 uniform float uSpecPower;
 // Ambient light level
 uniform vec3 uAmbientLight;
-
 // Directional Light
 uniform DirectionalLight uDirLight;
 
@@ -55,7 +50,6 @@ void main()
 	vec3 V = normalize(uCameraPos - fragWorldPos);
 	// Reflection of -L about N
 	vec3 R = normalize(reflect(-L, N));
-
 	// Compute phong reflection
 	vec3 Phong = uAmbientLight;
 	float NdotL = dot(N, L);
@@ -65,7 +59,6 @@ void main()
 		vec3 Specular = uDirLight.mSpecColor * pow(max(0.0, dot(R, V)), uSpecPower);
 		Phong += Diffuse + Specular;
 	}
-
 	// Final color is texture color times phong light (alpha = 1)
     outColor = texture(uTexture, fragTexCoord) * vec4(Phong, 1.0f);
 }

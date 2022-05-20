@@ -11,8 +11,7 @@
 #include "Renderer.h"
 #include "MeshComponent.h"
 
-PlaneActor::PlaneActor(Game* game)
-	:Actor(game)
+PlaneActor::PlaneActor(Game* game): Actor(game)
 {
 	SetScale(10.0f);
 	MeshComponent* mc = new MeshComponent(this);

@@ -21,12 +21,10 @@ public:
 	bool Initialize();
 	void RunLoop();
 	void Shutdown();
-
 	void AddActor(class Actor* actor);
 	void RemoveActor(class Actor* actor);
-
-	class Renderer* GetRenderer() { return mRenderer; }
-	class AudioSystem* GetAudioSystem() { return mAudioSystem; }
+	class Renderer* GetRenderer() { return pRenderer; }
+	class AudioSystem* GetAudioSystem() { return pAudioSystem; }
 private:
 	void ProcessInput();
 	void HandleKeyPress(int key);
@@ -34,22 +32,21 @@ private:
 	void GenerateOutput();
 	void LoadData();
 	void UnloadData();
-	
 	// All the actors in the game
 	std::vector<class Actor*> mActors;
 	// Any pending actors
 	std::vector<class Actor*> mPendingActors;
-
-	class Renderer* mRenderer;
-	class AudioSystem* mAudioSystem;
-
+	// Pointer to a specific Sphere actor
+	class Actor* pSphereActor;
+	bool mDirection;
+	class Renderer* pRenderer;
+	class AudioSystem* pAudioSystem;
 	Uint32 mTicksCount;
 	bool mIsRunning;
 	// Track if we're updating actors right now
 	bool mUpdatingActors;
-
 	// Game-specific code
-	class CameraActor* mCameraActor;
+	class CameraActor* pCameraActor;
 	SoundEvent mMusicEvent;
 	SoundEvent mReverbSnap;
 };

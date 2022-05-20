@@ -1,7 +1,4 @@
 TODO:
-6.1 - Multiple mesh shaders
-6.2 - Point lights
-7.1 - Add velocity to the listener
 7.2 - Virtual positions for events
 8.1 - Controller support
 8.2 - Abstract input mapping
@@ -33,3 +30,6 @@ Done:
 4.1 - State Machine
 5.1 - Updating exercise
 5.2 - Add vertex color (RGB) to sprite shader
+6.1 - Multiple mesh shaders
+6.2 - Point lights
+7.1 - Add velocity to the listener

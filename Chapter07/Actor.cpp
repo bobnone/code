@@ -11,20 +11,14 @@
 #include "Component.h"
 #include <algorithm>
 
-Actor::Actor(Game* game)
-	:mState(EActive)
-	,mPosition(Vector3::Zero)
-	,mRotation(Quaternion::Identity)
-	,mScale(1.0f)
-	,mGame(game)
-	,mRecomputeWorldTransform(true)
+Actor::Actor(Game* game): mState(EActive), mPosition(Vector3::Zero), mOldPosition(Vector3::Zero), mVelocity(Vector3::Zero), mRotation(Quaternion::Identity), mScale(1.0f), pGame(game), mRecomputeWorldTransform(true)
 {
-	mGame->AddActor(this);
+	pGame->AddActor(this);
 }
 
 Actor::~Actor()
 {
-	mGame->RemoveActor(this);
+	pGame->RemoveActor(this);
 	// Need to delete components
 	// Because ~Component calls RemoveComponent, need a different style loop
 	while (!mComponents.empty())
@@ -38,17 +32,15 @@ void Actor::Update(float deltaTime)
 	if (mState == EActive)
 	{
 		ComputeWorldTransform();
-
 		UpdateComponents(deltaTime);
 		UpdateActor(deltaTime);
-
 		ComputeWorldTransform();
 	}
 }
 
 void Actor::UpdateComponents(float deltaTime)
 {
-	for (auto comp : mComponents)
+	for (auto comp: mComponents)
 	{
 		comp->Update(deltaTime);
 	}
@@ -56,6 +48,14 @@ void Actor::UpdateComponents(float deltaTime)
 
 void Actor::UpdateActor(float deltaTime)
 {
+	if (mPosition != mOldPosition)
+	{
+		// NOTE: Velocity is change in position/time
+		mVelocity.x = (mPosition - mOldPosition).x / deltaTime;
+		mVelocity.y = (mPosition - mOldPosition).y / deltaTime;
+		mVelocity.z = (mPosition - mOldPosition).z / deltaTime;
+		mOldPosition = mPosition;
+	}
 }
 
 void Actor::ProcessInput(const uint8_t* keyState)
@@ -63,11 +63,10 @@ void Actor::ProcessInput(const uint8_t* keyState)
 	if (mState == EActive)
 	{
 		// First process input for components
-		for (auto comp : mComponents)
+		for (auto comp: mComponents)
 		{
 			comp->ProcessInput(keyState);
 		}
-
 		ActorInput(keyState);
 	}
 }
@@ -85,9 +84,8 @@ void Actor::ComputeWorldTransform()
 		mWorldTransform = Matrix4::CreateScale(mScale);
 		mWorldTransform *= Matrix4::CreateFromQuaternion(mRotation);
 		mWorldTransform *= Matrix4::CreateTranslation(mPosition);
-
 		// Inform components world transform updated
-		for (auto comp : mComponents)
+		for (auto comp: mComponents)
 		{
 			comp->OnUpdateWorldTransform();
 		}
@@ -96,20 +94,16 @@ void Actor::ComputeWorldTransform()
 
 void Actor::AddComponent(Component* component)
 {
-	// Find the insertion point in the sorted vector
-	// (The first element with a order higher than me)
+	// Find the insertion point in the sorted vector (The first element with a order higher than me)
 	int myOrder = component->GetUpdateOrder();
 	auto iter = mComponents.begin();
-	for (;
-		iter != mComponents.end();
-		++iter)
+	for (; iter != mComponents.end(); ++iter)
 	{
 		if (myOrder < (*iter)->GetUpdateOrder())
 		{
 			break;
 		}
 	}
-
 	// Inserts element before position of iterator
 	mComponents.insert(iter, component);
 }

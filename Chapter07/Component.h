@@ -12,8 +12,7 @@
 class Component
 {
 public:
-	// Constructor
-	// (the lower the update order, the earlier the component updates)
+	// Constructor (the lower the update order, the earlier the component updates)
 	Component(class Actor* owner, int updateOrder = 100);
 	// Destructor
 	virtual ~Component();
@@ -23,11 +22,10 @@ public:
 	virtual void ProcessInput(const uint8_t* keyState) {}
 	// Called when world transform changes
 	virtual void OnUpdateWorldTransform() { }
-
 	int GetUpdateOrder() const { return mUpdateOrder; }
 protected:
 	// Owning actor
-	class Actor* mOwner;
+	class Actor* pOwner;
 	// Update order of component
 	int mUpdateOrder;
 };

@@ -15,36 +15,32 @@
 #include "Texture.h"
 #include "VertexArray.h"
 
-MeshComponent::MeshComponent(Actor* owner)
-	:Component(owner)
-	,mMesh(nullptr)
-	,mTextureIndex(0)
+MeshComponent::MeshComponent(Actor* owner): Component(owner), pMesh(nullptr), mTextureIndex(0)
 {
-	mOwner->GetGame()->GetRenderer()->AddMeshComp(this);
+	pOwner->GetGame()->GetRenderer()->AddMeshComp(this);
 }
 
 MeshComponent::~MeshComponent()
 {
-	mOwner->GetGame()->GetRenderer()->RemoveMeshComp(this);
+	pOwner->GetGame()->GetRenderer()->RemoveMeshComp(this);
 }
 
 void MeshComponent::Draw(Shader* shader)
 {
-	if (mMesh)
+	if (pMesh)
 	{
 		// Set the world transform
-		shader->SetMatrixUniform("uWorldTransform", 
-			mOwner->GetWorldTransform());
+		shader->SetMatrixUniform("uWorldTransform", pOwner->GetWorldTransform());
 		// Set specular power
-		shader->SetFloatUniform("uSpecPower", mMesh->GetSpecPower());
+		shader->SetFloatUniform("uSpecPower", pMesh->GetSpecPower());
 		// Set the active texture
-		Texture* t = mMesh->GetTexture(mTextureIndex);
+		Texture* t = pMesh->GetTexture(mTextureIndex);
 		if (t)
 		{
 			t->SetActive();
 		}
 		// Set the mesh's vertex array as active
-		VertexArray* va = mMesh->GetVertexArray();
+		VertexArray* va = pMesh->GetVertexArray();
 		va->SetActive();
 		// Draw
 		glDrawElements(GL_TRIANGLES, va->GetNumIndices(), GL_UNSIGNED_INT, nullptr);

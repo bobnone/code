@@ -10,26 +10,22 @@
 #include "AudioSystem.h"
 #include <fmod_studio.hpp>
 
-SoundEvent::SoundEvent(class AudioSystem* system, unsigned int id)
-	:mSystem(system)
-	,mID(id)
+SoundEvent::SoundEvent(class AudioSystem* system, unsigned int id): pSystem(system), mID(id)
 {
 }
 
-SoundEvent::SoundEvent()
-	:mSystem(nullptr)
-	,mID(0)
+SoundEvent::SoundEvent(): pSystem(nullptr), mID(0)
 {
 }
 
 bool SoundEvent::IsValid()
 {
-	return (mSystem && mSystem->GetEventInstance(mID) != nullptr);
+	return (pSystem && pSystem->GetEventInstance(mID) != nullptr);
 }
 
 void SoundEvent::Restart()
 {
-	auto event = mSystem ? mSystem->GetEventInstance(mID) : nullptr;
+	auto event = pSystem ? pSystem->GetEventInstance(mID) : nullptr;
 	if (event)
 	{
 		event->start();
@@ -38,19 +34,17 @@ void SoundEvent::Restart()
 
 void SoundEvent::Stop(bool allowFadeOut /* true */)
 {
-	auto event = mSystem ? mSystem->GetEventInstance(mID) : nullptr;
+	auto event = pSystem ? pSystem->GetEventInstance(mID) : nullptr;
 	if (event)
 	{
-		FMOD_STUDIO_STOP_MODE mode = allowFadeOut ?
-			FMOD_STUDIO_STOP_ALLOWFADEOUT :
-			FMOD_STUDIO_STOP_IMMEDIATE;
+		FMOD_STUDIO_STOP_MODE mode = allowFadeOut ? FMOD_STUDIO_STOP_ALLOWFADEOUT : FMOD_STUDIO_STOP_IMMEDIATE;
 		event->stop(mode);
 	}
 }
 
 void SoundEvent::SetPaused(bool pause)
 {
-	auto event = mSystem ? mSystem->GetEventInstance(mID) : nullptr;
+	auto event = pSystem ? pSystem->GetEventInstance(mID) : nullptr;
 	if (event)
 	{
 		event->setPaused(pause);
@@ -59,7 +53,7 @@ void SoundEvent::SetPaused(bool pause)
 
 void SoundEvent::SetVolume(float value)
 {
-	auto event = mSystem ? mSystem->GetEventInstance(mID) : nullptr;
+	auto event = pSystem ? pSystem->GetEventInstance(mID) : nullptr;
 	if (event)
 	{
 		event->setVolume(value);
@@ -68,7 +62,7 @@ void SoundEvent::SetVolume(float value)
 
 void SoundEvent::SetPitch(float value)
 {
-	auto event = mSystem ? mSystem->GetEventInstance(mID) : nullptr;
+	auto event = pSystem ? pSystem->GetEventInstance(mID) : nullptr;
 	if (event)
 	{
 		event->setPitch(value);
@@ -77,17 +71,17 @@ void SoundEvent::SetPitch(float value)
 
 void SoundEvent::SetParameter(const std::string& name, float value)
 {
-	auto event = mSystem ? mSystem->GetEventInstance(mID) : nullptr;
+	auto event = pSystem ? pSystem->GetEventInstance(mID) : nullptr;
 	if (event)
 	{
-		event->setParameterValue(name.c_str(), value);
+		event->setParameterByName(name.c_str(), value);
 	}
 }
 
 bool SoundEvent::GetPaused() const
 {
 	bool retVal = false;
-	auto event = mSystem ? mSystem->GetEventInstance(mID) : nullptr;
+	auto event = pSystem ? pSystem->GetEventInstance(mID) : nullptr;
 	if (event)
 	{
 		event->getPaused(&retVal);
@@ -98,7 +92,7 @@ bool SoundEvent::GetPaused() const
 float SoundEvent::GetVolume() const
 {
 	float retVal = 0.0f;
-	auto event = mSystem ? mSystem->GetEventInstance(mID) : nullptr;
+	auto event = pSystem ? pSystem->GetEventInstance(mID) : nullptr;
 	if (event)
 	{
 		event->getVolume(&retVal);
@@ -109,7 +103,7 @@ float SoundEvent::GetVolume() const
 float SoundEvent::GetPitch() const
 {
 	float retVal = 0.0f;
-	auto event = mSystem ? mSystem->GetEventInstance(mID) : nullptr;
+	auto event = pSystem ? pSystem->GetEventInstance(mID) : nullptr;
 	if (event)
 	{
 		event->getPitch(&retVal);
@@ -120,10 +114,10 @@ float SoundEvent::GetPitch() const
 float SoundEvent::GetParameter(const std::string& name)
 {
 	float retVal = 0.0f;
-	auto event = mSystem ? mSystem->GetEventInstance(mID) : nullptr;
+	auto event = pSystem ? pSystem->GetEventInstance(mID) : nullptr;
 	if (event)
 	{
-		event->getParameterValue(name.c_str(), &retVal);
+		event->getParameterByName(name.c_str(), &retVal);
 	}
 	return retVal;
 }
@@ -131,7 +125,7 @@ float SoundEvent::GetParameter(const std::string& name)
 bool SoundEvent::Is3D() const
 {
 	bool retVal = false;
-	auto event = mSystem ? mSystem->GetEventInstance(mID) : nullptr;
+	auto event = pSystem ? pSystem->GetEventInstance(mID) : nullptr;
 	if (event)
 	{
 		// Get the event description
@@ -159,9 +153,9 @@ namespace
 	}
 }
 
-void SoundEvent::Set3DAttributes(const Matrix4& worldTrans)
+void SoundEvent::Set3DAttributes(const Matrix4& worldTrans, const Vector3& velocity)
 {
-	auto event = mSystem ? mSystem->GetEventInstance(mID) : nullptr;
+	auto event = pSystem ? pSystem->GetEventInstance(mID) : nullptr;
 	if (event)
 	{
 		FMOD_3D_ATTRIBUTES attr;
@@ -171,8 +165,8 @@ void SoundEvent::Set3DAttributes(const Matrix4& worldTrans)
 		attr.forward = VecToFMOD(worldTrans.GetXAxis());
 		// Third row is up
 		attr.up = VecToFMOD(worldTrans.GetZAxis());
-		// Set velocity to zero (fix if using Doppler effect)
-		attr.velocity = { 0.0f, 0.0f, 0.0f };
+		// Set velocity
+		attr.velocity = VecToFMOD(velocity);
 		event->set3DAttributes(&attr);
 	}
 }

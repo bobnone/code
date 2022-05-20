@@ -19,7 +19,7 @@ public:
 	bool Load(const std::string& fileName, class Renderer* renderer);
 	void Unload();
 	// Get the vertex array associated with this mesh
-	class VertexArray* GetVertexArray() { return mVertexArray; }
+	class VertexArray* GetVertexArray() { return pVertexArray; }
 	// Get a texture from specified index
 	class Texture* GetTexture(size_t index);
 	// Get name of shader
@@ -32,7 +32,7 @@ private:
 	// Textures associated with this mesh
 	std::vector<class Texture*> mTextures;
 	// Vertex array associated with this mesh
-	class VertexArray* mVertexArray;
+	class VertexArray* pVertexArray;
 	// Name of shader specified by mesh
 	std::string mShaderName;
 	// Stores object space bounding sphere radius

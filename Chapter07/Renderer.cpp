@@ -16,10 +16,7 @@
 #include "MeshComponent.h"
 #include <GL/glew.h>
 
-Renderer::Renderer(Game* game)
-	:mGame(game)
-	,mSpriteShader(nullptr)
-	,mMeshShader(nullptr)
+Renderer::Renderer(Game* game): pGame(game), pSpriteShader(nullptr), pMeshShader(nullptr)
 {
 }
 
@@ -31,8 +28,7 @@ bool Renderer::Initialize(float screenWidth, float screenHeight)
 {
 	mScreenWidth = screenWidth;
 	mScreenHeight = screenHeight;
-
-	// Set OpenGL attributes
+// Set OpenGL attributes:
 	// Use the core OpenGL profile
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	// Specify version 3.3
@@ -48,18 +44,14 @@ bool Renderer::Initialize(float screenWidth, float screenHeight)
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	// Force OpenGL to use hardware acceleration
 	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-
-	mWindow = SDL_CreateWindow("Game Programming in C++ (Chapter 7)", 100, 100,
-		static_cast<int>(mScreenWidth), static_cast<int>(mScreenHeight), SDL_WINDOW_OPENGL);
-	if (!mWindow)
+	pWindow = SDL_CreateWindow("Game Programming in C++ (Chapter 7)", 100, 100, static_cast<int>(mScreenWidth), static_cast<int>(mScreenHeight), SDL_WINDOW_OPENGL);
+	if (!pWindow)
 	{
 		SDL_Log("Failed to create window: %s", SDL_GetError());
 		return false;
 	}
-
 	// Create an OpenGL context
-	mContext = SDL_GL_CreateContext(mWindow);
-
+	mContext = SDL_GL_CreateContext(pWindow);
 	// Initialize GLEW
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK)
@@ -67,33 +59,28 @@ bool Renderer::Initialize(float screenWidth, float screenHeight)
 		SDL_Log("Failed to initialize GLEW.");
 		return false;
 	}
-
-	// On some platforms, GLEW will emit a benign error code,
-	// so clear it
+	// On some platforms, GLEW will emit a benign error code, so clear it
 	glGetError();
-
 	// Make sure we can create/compile shaders
 	if (!LoadShaders())
 	{
 		SDL_Log("Failed to load shaders.");
 		return false;
 	}
-
 	// Create quad for drawing sprites
 	CreateSpriteVerts();
-
 	return true;
 }
 
 void Renderer::Shutdown()
 {
-	delete mSpriteVerts;
-	mSpriteShader->Unload();
-	delete mSpriteShader;
-	mMeshShader->Unload();
-	delete mMeshShader;
+	delete pSpriteVerts;
+	pSpriteShader->Unload();
+	delete pSpriteShader;
+	pMeshShader->Unload();
+	delete pMeshShader;
 	SDL_GL_DeleteContext(mContext);
-	SDL_DestroyWindow(mWindow);
+	SDL_DestroyWindow(pWindow);
 }
 
 void Renderer::UnloadData()
@@ -105,7 +92,6 @@ void Renderer::UnloadData()
 		delete i.second;
 	}
 	mTextures.clear();
-
 	// Destroy meshes
 	for (auto i : mMeshes)
 	{
@@ -117,26 +103,24 @@ void Renderer::UnloadData()
 
 void Renderer::Draw()
 {
-	// Set the clear color to light grey
+	// Set the clear color to black
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	// Clear the color buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	// Draw mesh components
 	// Enable depth buffering/disable alpha blend
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 	// Set the mesh shader active
-	mMeshShader->SetActive();
+	pMeshShader->SetActive();
 	// Update view-projection matrix
-	mMeshShader->SetMatrixUniform("uViewProj", mView * mProjection);
+	pMeshShader->SetMatrixUniform("uViewProj", mView * mProjection);
 	// Update lighting uniforms
-	SetLightUniforms(mMeshShader);
-	for (auto mc : mMeshComps)
+	SetLightUniforms(pMeshShader);
+	for (auto mc: mMeshComps)
 	{
-		mc->Draw(mMeshShader);
+		mc->Draw(pMeshShader);
 	}
-
 	// Draw all sprite components
 	// Disable depth buffering
 	glDisable(GL_DEPTH_TEST);
@@ -144,35 +128,29 @@ void Renderer::Draw()
 	glEnable(GL_BLEND);
 	glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-
-	// Set shader/vao as active
-	mSpriteShader->SetActive();
-	mSpriteVerts->SetActive();
-	for (auto sprite : mSprites)
+	// Set shader/VAO as active
+	pSpriteShader->SetActive();
+	pSpriteVerts->SetActive();
+	for (auto sprite: mSprites)
 	{
-		sprite->Draw(mSpriteShader);
+		sprite->Draw(pSpriteShader);
 	}
-
 	// Swap the buffers
-	SDL_GL_SwapWindow(mWindow);
+	SDL_GL_SwapWindow(pWindow);
 }
 
 void Renderer::AddSprite(SpriteComponent* sprite)
 {
-	// Find the insertion point in the sorted vector
-	// (The first element with a higher draw order than me)
+	// Find the insertion point in the sorted vector (The first element with a higher draw order than me)
 	int myDrawOrder = sprite->GetDrawOrder();
 	auto iter = mSprites.begin();
-	for (;
-		iter != mSprites.end();
-		++iter)
+	for (; iter != mSprites.end(); ++iter)
 	{
 		if (myDrawOrder < (*iter)->GetDrawOrder())
 		{
 			break;
 		}
 	}
-
 	// Inserts element before position of iterator
 	mSprites.insert(iter, sprite);
 }
@@ -245,30 +223,26 @@ Mesh* Renderer::GetMesh(const std::string & fileName)
 bool Renderer::LoadShaders()
 {
 	// Create sprite shader
-	mSpriteShader = new Shader();
-	if (!mSpriteShader->Load("Shaders/Sprite.vert", "Shaders/Sprite.frag"))
+	pSpriteShader = new Shader();
+	if (!pSpriteShader->Load("Shaders/Sprite.vert", "Shaders/Sprite.frag"))
 	{
 		return false;
 	}
-
-	mSpriteShader->SetActive();
+	pSpriteShader->SetActive();
 	// Set the view-projection matrix
 	Matrix4 viewProj = Matrix4::CreateSimpleViewProj(mScreenWidth, mScreenHeight);
-	mSpriteShader->SetMatrixUniform("uViewProj", viewProj);
-
+	pSpriteShader->SetMatrixUniform("uViewProj", viewProj);
 	// Create basic mesh shader
-	mMeshShader = new Shader();
-	if (!mMeshShader->Load("Shaders/Phong.vert", "Shaders/Phong.frag"))
+	pMeshShader = new Shader();
+	if (!pMeshShader->Load("Shaders/Phong.vert", "Shaders/Phong.frag"))
 	{
 		return false;
 	}
-
-	mMeshShader->SetActive();
+	pMeshShader->SetActive();
 	// Set the view-projection matrix
 	mView = Matrix4::CreateLookAt(Vector3::Zero, Vector3::UnitX, Vector3::UnitZ);
-	mProjection = Matrix4::CreatePerspectiveFOV(Math::ToRadians(70.0f),
-		mScreenWidth, mScreenHeight, 25.0f, 10000.0f);
-	mMeshShader->SetMatrixUniform("uViewProj", mView * mProjection);
+	mProjection = Matrix4::CreatePerspectiveFOV(Math::ToRadians(70.0f), mScreenWidth, mScreenHeight, 25.0f, 10000.0f);
+	pMeshShader->SetMatrixUniform("uViewProj", mView * mProjection);
 	return true;
 }
 
@@ -280,13 +254,11 @@ void Renderer::CreateSpriteVerts()
 		0.5f,-0.5f, 0.f, 0.f, 0.f, 0.0f, 1.f, 1.f, // bottom right
 		-0.5f,-0.5f, 0.f, 0.f, 0.f, 0.0f, 0.f, 1.f  // bottom left
 	};
-
 	unsigned int indices[] = {
 		0, 1, 2,
 		2, 3, 0
 	};
-
-	mSpriteVerts = new VertexArray(vertices, 4, indices, 6);
+	pSpriteVerts = new VertexArray(vertices, 4, indices, 6);
 }
 
 void Renderer::SetLightUniforms(Shader* shader)
@@ -298,10 +270,7 @@ void Renderer::SetLightUniforms(Shader* shader)
 	// Ambient light
 	shader->SetVectorUniform("uAmbientLight", mAmbientLight);
 	// Directional light
-	shader->SetVectorUniform("uDirLight.mDirection",
-		mDirLight.mDirection);
-	shader->SetVectorUniform("uDirLight.mDiffuseColor",
-		mDirLight.mDiffuseColor);
-	shader->SetVectorUniform("uDirLight.mSpecColor",
-		mDirLight.mSpecColor);
+	shader->SetVectorUniform("uDirLight.mDirection", mDirLight.mDirection);
+	shader->SetVectorUniform("uDirLight.mDiffuseColor", mDirLight.mDiffuseColor);
+	shader->SetVectorUniform("uDirLight.mSpecColor", mDirLight.mSpecColor);
 }
