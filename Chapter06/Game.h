@@ -20,30 +20,24 @@ public:
 	bool Initialize();
 	void RunLoop();
 	void Shutdown();
-
 	void AddActor(class Actor* actor);
 	void RemoveActor(class Actor* actor);
-
-	class Renderer* GetRenderer() { return mRenderer; }
+	class Renderer* GetRenderer() { return pRenderer; }
 private:
 	void ProcessInput();
 	void UpdateGame();
 	void GenerateOutput();
 	void LoadData();
 	void UnloadData();
-	
 	// All the actors in the game
 	std::vector<class Actor*> mActors;
 	// Any pending actors
 	std::vector<class Actor*> mPendingActors;
-
-	class Renderer* mRenderer;
-
+	class Renderer* pRenderer;
 	Uint32 mTicksCount;
 	bool mIsRunning;
 	// Track if we're updating actors right now
 	bool mUpdatingActors;
-
 	// Game-specific code
-	class CameraActor* mCameraActor;
+	class CameraActor* pCameraActor;
 };

@@ -8,24 +8,20 @@
 
 #include "MeshComponent.h"
 #include "Shader.h"
-#include "Mesh.h"
 #include "Actor.h"
 #include "Game.h"
 #include "Renderer.h"
 #include "Texture.h"
 #include "VertexArray.h"
 
-MeshComponent::MeshComponent(Actor* owner)
-	:Component(owner)
-	,mMesh(nullptr)
-	,mTextureIndex(0)
+MeshComponent::MeshComponent(Actor* owner, class Mesh* mesh): Component(owner), mMesh(mesh), mTextureIndex(0)
 {
-	mOwner->GetGame()->GetRenderer()->AddMeshComp(this);
+	pOwner->GetGame()->GetRenderer()->AddMeshComp(this);
 }
 
 MeshComponent::~MeshComponent()
 {
-	mOwner->GetGame()->GetRenderer()->RemoveMeshComp(this);
+	pOwner->GetGame()->GetRenderer()->RemoveMeshComp(this);
 }
 
 void MeshComponent::Draw(Shader* shader)
@@ -33,8 +29,7 @@ void MeshComponent::Draw(Shader* shader)
 	if (mMesh)
 	{
 		// Set the world transform
-		shader->SetMatrixUniform("uWorldTransform", 
-			mOwner->GetWorldTransform());
+		shader->SetMatrixUniform("uWorldTransform", pOwner->GetWorldTransform());
 		// Set specular power
 		shader->SetFloatUniform("uSpecPower", mMesh->GetSpecPower());
 		// Set the active texture

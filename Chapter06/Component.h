@@ -22,12 +22,11 @@ public:
 	// Process input for this component
 	virtual void ProcessInput(const uint8_t* keyState) {}
 	// Called when world transform changes
-	virtual void OnUpdateWorldTransform() { }
-
+	virtual void OnUpdateWorldTransform() {}
 	int GetUpdateOrder() const { return mUpdateOrder; }
 protected:
 	// Owning actor
-	class Actor* mOwner;
+	class Actor* pOwner;
 	// Update order of component
 	int mUpdateOrder;
 };

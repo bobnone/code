@@ -15,12 +15,8 @@
 #include "CameraActor.h"
 #include "PlaneActor.h"
 
-Game::Game()
-:mRenderer(nullptr)
-,mIsRunning(true)
-,mUpdatingActors(false)
+Game::Game(): pRenderer(nullptr), mIsRunning(true), mUpdatingActors(false)
 {
-	
 }
 
 bool Game::Initialize()
@@ -30,21 +26,17 @@ bool Game::Initialize()
 		SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
 		return false;
 	}
-
 	// Create the renderer
-	mRenderer = new Renderer(this);
-	if (!mRenderer->Initialize(1024.0f, 768.0f))
+	pRenderer = new Renderer(this);
+	if (!pRenderer->Initialize(1024.0f, 768.0f))
 	{
 		SDL_Log("Failed to initialize renderer");
-		delete mRenderer;
-		mRenderer = nullptr;
+		delete pRenderer;
+		pRenderer = nullptr;
 		return false;
 	}
-
 	LoadData();
-
 	mTicksCount = SDL_GetTicks();
-	
 	return true;
 }
 
@@ -70,14 +62,12 @@ void Game::ProcessInput()
 				break;
 		}
 	}
-	
 	const Uint8* state = SDL_GetKeyboardState(NULL);
 	if (state[SDL_SCANCODE_ESCAPE])
 	{
 		mIsRunning = false;
 	}
-
-	for (auto actor : mActors)
+	for (auto actor: mActors)
 	{
 		actor->ProcessInput(state);
 	}
@@ -87,44 +77,38 @@ void Game::UpdateGame()
 {
 	// Compute delta time
 	// Wait until 16ms has elapsed since last frame
-	while (!SDL_TICKS_PASSED(SDL_GetTicks(), mTicksCount + 16))
-		;
-
+	while (!SDL_TICKS_PASSED(SDL_GetTicks(), mTicksCount + 16));
 	float deltaTime = (SDL_GetTicks() - mTicksCount) / 1000.0f;
 	if (deltaTime > 0.05f)
 	{
 		deltaTime = 0.05f;
 	}
 	mTicksCount = SDL_GetTicks();
-
-	// Update all actors
+// Update all actors:
 	mUpdatingActors = true;
-	for (auto actor : mActors)
+	for (auto actor: mActors)
 	{
 		actor->Update(deltaTime);
 	}
 	mUpdatingActors = false;
-
 	// Move any pending actors to mActors
-	for (auto pending : mPendingActors)
+	for (auto pending: mPendingActors)
 	{
 		pending->ComputeWorldTransform();
 		mActors.emplace_back(pending);
 	}
 	mPendingActors.clear();
-
 	// Add any dead actors to a temp vector
 	std::vector<Actor*> deadActors;
-	for (auto actor : mActors)
+	for (auto actor: mActors)
 	{
 		if (actor->GetState() == Actor::EDead)
 		{
 			deadActors.emplace_back(actor);
 		}
 	}
-
 	// Delete dead actors (which removes them from mActors)
-	for (auto actor : deadActors)
+	for (auto actor: deadActors)
 	{
 		delete actor;
 	}
@@ -132,7 +116,7 @@ void Game::UpdateGame()
 
 void Game::GenerateOutput()
 {
-	mRenderer->Draw();
+	pRenderer->Draw();
 }
 
 void Game::LoadData()
@@ -144,15 +128,11 @@ void Game::LoadData()
 	Quaternion q(Vector3::UnitY, -Math::PiOver2);
 	q = Quaternion::Concatenate(q, Quaternion(Vector3::UnitZ, Math::Pi + Math::Pi / 4.0f));
 	a->SetRotation(q);
-	MeshComponent* mc = new MeshComponent(a);
-	mc->SetMesh(mRenderer->GetMesh("Assets/Cube.gpmesh"));
-
+	MeshComponent* mc = new MeshComponent(a, pRenderer->GetMesh("Assets/Cube.gpmesh"));
 	a = new Actor(this);
 	a->SetPosition(Vector3(200.0f, -75.0f, 0.0f));
 	a->SetScale(3.0f);
-	mc = new MeshComponent(a);
-	mc->SetMesh(mRenderer->GetMesh("Assets/Sphere.gpmesh"));
-
+	mc = new MeshComponent(a, pRenderer->GetMesh("Assets/Sphere.gpmesh"));
 	// Setup floor
 	const float start = -1250.0f;
 	const float size = 250.0f;
@@ -164,7 +144,6 @@ void Game::LoadData()
 			a->SetPosition(Vector3(start + i * size, start + j * size, -100.0f));
 		}
 	}
-
 	// Left/right walls
 	q = Quaternion(Vector3::UnitX, Math::PiOver2);
 	for (int i = 0; i < 10; i++)
@@ -172,12 +151,10 @@ void Game::LoadData()
 		a = new PlaneActor(this);
 		a->SetPosition(Vector3(start + i * size, start - size, 0.0f));
 		a->SetRotation(q);
-		
 		a = new PlaneActor(this);
 		a->SetPosition(Vector3(start + i * size, -start + size, 0.0f));
 		a->SetRotation(q);
 	}
-
 	q = Quaternion::Concatenate(q, Quaternion(Vector3::UnitZ, Math::PiOver2));
 	// Forward/back walls
 	for (int i = 0; i < 10; i++)
@@ -185,33 +162,28 @@ void Game::LoadData()
 		a = new PlaneActor(this);
 		a->SetPosition(Vector3(start - size, start + i * size, 0.0f));
 		a->SetRotation(q);
-
 		a = new PlaneActor(this);
 		a->SetPosition(Vector3(-start + size, start + i * size, 0.0f));
 		a->SetRotation(q);
 	}
-
-	// Setup lights
-	mRenderer->SetAmbientLight(Vector3(0.2f, 0.2f, 0.2f));
-	DirectionalLight& dir = mRenderer->GetDirectionalLight();
+// Setup lights:
+	pRenderer->SetAmbientLight(Vector3(0.2f, 0.2f, 0.2f));
+	DirectionalLight& dir = pRenderer->GetDirectionalLight();
 	dir.mDirection = Vector3(0.0f, -0.707f, -0.707f);
 	dir.mDiffuseColor = Vector3(0.78f, 0.88f, 1.0f);
 	dir.mSpecColor = Vector3(0.8f, 0.8f, 0.8f);
-
 	// Camera actor
-	mCameraActor = new CameraActor(this);
-
+	pCameraActor = new CameraActor(this);
 	// UI elements
 	a = new Actor(this);
 	a->SetPosition(Vector3(-350.0f, -350.0f, 0.0f));
 	SpriteComponent* sc = new SpriteComponent(a);
-	sc->SetTexture(mRenderer->GetTexture("Assets/HealthBar.png"));
-
+	sc->SetTexture(pRenderer->GetTexture("Assets/HealthBar.png"));
 	a = new Actor(this);
 	a->SetPosition(Vector3(375.0f, -275.0f, 0.0f));
 	a->SetScale(0.75f);
 	sc = new SpriteComponent(a);
-	sc->SetTexture(mRenderer->GetTexture("Assets/Radar.png"));
+	sc->SetTexture(pRenderer->GetTexture("Assets/Radar.png"));
 }
 
 void Game::UnloadData()
@@ -222,19 +194,18 @@ void Game::UnloadData()
 	{
 		delete mActors.back();
 	}
-
-	if (mRenderer)
+	if (pRenderer)
 	{
-		mRenderer->UnloadData();
+		pRenderer->UnloadData();
 	}
 }
 
 void Game::Shutdown()
 {
 	UnloadData();
-	if (mRenderer)
+	if (pRenderer)
 	{
-		mRenderer->Shutdown();
+		pRenderer->Shutdown();
 	}
 	SDL_Quit();
 }
@@ -262,7 +233,6 @@ void Game::RemoveActor(Actor* actor)
 		std::iter_swap(iter, mPendingActors.end() - 1);
 		mPendingActors.pop_back();
 	}
-
 	// Is it in actors?
 	iter = std::find(mActors.begin(), mActors.end(), actor);
 	if (iter != mActors.end())

@@ -12,21 +12,18 @@
 #include "Renderer.h"
 #include "Game.h"
 
-CameraActor::CameraActor(Game* game)
-	:Actor(game)
+CameraActor::CameraActor(Game* game): Actor(game)
 {
-	mMoveComp = new MoveComponent(this);
+	pMoveComp = new MoveComponent(this);
 }
 
 void CameraActor::UpdateActor(float deltaTime)
 {
 	Actor::UpdateActor(deltaTime);
-
 	// Compute new camera from this actor
 	Vector3 cameraPos = GetPosition();
 	Vector3 target = GetPosition() + GetForward() * 100.0f;
 	Vector3 up = Vector3::UnitZ;
-
 	Matrix4 view = Matrix4::CreateLookAt(cameraPos, target, up);
 	GetGame()->GetRenderer()->SetViewMatrix(view);
 }
@@ -52,7 +49,6 @@ void CameraActor::ActorInput(const uint8_t* keys)
 	{
 		angularSpeed += Math::TwoPi;
 	}
-
-	mMoveComp->SetForwardSpeed(forwardSpeed);
-	mMoveComp->SetAngularSpeed(angularSpeed);
+	pMoveComp->SetForwardSpeed(forwardSpeed);
+	pMoveComp->SetAngularSpeed(angularSpeed);
 }
