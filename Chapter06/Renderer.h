@@ -23,6 +23,19 @@ struct DirectionalLight
 	Vector3 mSpecColor;
 };
 
+struct PointLight
+{
+	// Position of light
+	Vector3 mWorldPos;
+	// Diffuse color
+	Vector3 mDiffuseColor;
+	// Specular color
+	Vector3 mSpecColor;
+	// Radius of the light
+	float mInnerRadius;
+	float mOuterRadius;
+};
+
 class Renderer
 {
 public:
@@ -42,6 +55,7 @@ public:
 	void SetViewMatrix(const Matrix4& view) { mView = view; }
 	void SetAmbientLight(const Vector3& ambient) { mAmbientLight = ambient; }
 	DirectionalLight& GetDirectionalLight() { return mDirLight; }
+	std::vector<PointLight>* GetPointLights() { return &mPointLights; }
 	float GetScreenWidth() const { return mScreenWidth; }
 	float GetScreenHeight() const { return mScreenHeight; }
 private:
@@ -76,6 +90,7 @@ private:
 	// Lighting data
 	Vector3 mAmbientLight;
 	DirectionalLight mDirLight;
+	std::vector<PointLight> mPointLights = {};
 	// Window
 	SDL_Window* pWindow;
 	// OpenGL context

@@ -167,11 +167,44 @@ void Game::LoadData()
 		a->SetRotation(q);
 	}
 // Setup lights:
+	// Directional Light
 	pRenderer->SetAmbientLight(Vector3(0.2f, 0.2f, 0.2f));
 	DirectionalLight& dir = pRenderer->GetDirectionalLight();
 	dir.mDirection = Vector3(0.0f, -0.707f, -0.707f);
 	dir.mDiffuseColor = Vector3(0.78f, 0.88f, 1.0f);
 	dir.mSpecColor = Vector3(0.8f, 0.8f, 0.8f);
+	// Point Lights
+	std::vector<PointLight>* plvec = pRenderer->GetPointLights();
+	// Point Light1
+	PointLight pl1;
+	pl1.mWorldPos = Vector3(0.0f, 0.0f, 0.0f);
+	pl1.mDiffuseColor = Vector3(0.0f, 1.0f, 0.0f);
+	pl1.mSpecColor = Vector3(0.0f, 1.0f, 0.0f);
+	pl1.mInnerRadius = 0.0f;
+	pl1.mOuterRadius = 500.0f;
+	plvec->emplace_back(pl1);
+	// Point Light2
+	PointLight pl2;
+	pl2.mWorldPos = Vector3(500.0f, 500.0f, 200.0f);
+	pl2.mDiffuseColor = Vector3(0.0f, 0.0f, 1.0f);
+	pl2.mSpecColor = Vector3(0.0f, 0.0f, 1.0f);
+	pl2.mInnerRadius = 0.0f;
+	pl2.mOuterRadius = 500.0f;
+	plvec->emplace_back(pl2);
+	PointLight pl3;
+	pl3.mWorldPos = Vector3(0.0f, -200.0f, 0.0f);
+	pl3.mDiffuseColor = Vector3(1.0f, 0.0f, 0.0f);
+	pl3.mSpecColor = Vector3(1.0f, 0.0f, 0.0f);
+	pl3.mInnerRadius = 0.0f;
+	pl3.mOuterRadius = 500.0f;
+	plvec->emplace_back(pl3);
+	PointLight pl4;
+	pl4.mWorldPos = Vector3(-1000.0f, 1000.0f, 0.0f);
+	pl4.mDiffuseColor = Vector3(1.0f, 1.0f, 0.0f);
+	pl4.mSpecColor = Vector3(1.0f, 1.0f, 0.0f);
+	pl4.mInnerRadius = 0.0f;
+	pl4.mOuterRadius = 500.0f;
+	plvec->emplace_back(pl4);
 	// Camera actor
 	pCameraActor = new CameraActor(this);
 	// UI elements

@@ -75,8 +75,7 @@ bool Renderer::Initialize(float screenWidth, float screenHeight)
 void Renderer::Shutdown()
 {
 	delete pSpriteVerts;
-	// NOTE: Shaders are unloaded elsewhere
-	delete pCurrentShader;
+	pSpriteVerts = nullptr;
 	SDL_GL_DeleteContext(mContext);
 	SDL_DestroyWindow(pWindow);
 }
@@ -328,4 +327,16 @@ void Renderer::SetLightUniforms(Shader* shader)
 	shader->SetVectorUniform("uDirLight.mDirection", mDirLight.mDirection);
 	shader->SetVectorUniform("uDirLight.mDiffuseColor", mDirLight.mDiffuseColor);
 	shader->SetVectorUniform("uDirLight.mSpecColor", mDirLight.mSpecColor);
+	// Point lights
+	for (int i = 0; i < mPointLights.size(); i++)
+	{
+		std::string intstring = std::to_string(i);
+		shader->SetVectorUniform(((std::string)"uPointLights[" + intstring + "].mWorldPos").c_str(), mPointLights[i].mWorldPos);
+		shader->SetVectorUniform(((std::string)"uPointLights[" + intstring + "].mDiffuseColor").c_str(), mPointLights[i].mDiffuseColor);
+		shader->SetVectorUniform(((std::string)"uPointLights[" + intstring + "].mSpecColor").c_str(), mPointLights[i].mSpecColor);
+		shader->SetFloatUniform(((std::string)"uPointLights[" + intstring + "].mInnerRadius").c_str(), mPointLights[i].mInnerRadius);
+		shader->SetFloatUniform(((std::string)"uPointLights[" + intstring + "].mOuterRadius").c_str(), mPointLights[i].mOuterRadius);
+	}
+	// Pass the size of the array to the shader
+	shader->SetIntUniform("uNumPointLights", mPointLights.size());
 }

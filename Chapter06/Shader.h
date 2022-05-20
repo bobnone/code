@@ -27,6 +27,8 @@ public:
 	void SetVectorUniform(const char* name, const Vector3& vector);
 	// Sets a float uniform
 	void SetFloatUniform(const char* name, float value);
+	// Sets a int uniform
+	void SetIntUniform(const char* name, int value);
 private:
 	// Tries to compile the specified shader
 	bool CompileShader(const std::string& fileName, GLenum shaderType, GLuint& outShader);
